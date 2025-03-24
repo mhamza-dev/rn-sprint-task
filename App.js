@@ -1,20 +1,50 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { useState } from "react";
+import {
+  SafeAreaView,
+  StyleSheet,
+  View,
+  StatusBar as NativeStatusBar,
+  Platform,
+} from "react-native";
+import { StatusBar } from "expo-status-bar";
+import { NavigationContainer } from "@react-navigation/native";
+
+// navigations
+import NavigationTheme from "./app/navigations/NavigationTheme";
+import AppTabNavigator from "./app/navigations/AppNavigator";
+
+// utils
+import { colors, spacing } from "./app/utils";
+import { loadFonts } from "./app/utils/font";
 
 export default function App() {
+  const [fontsLoaded] = loadFonts();
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaView style={styles.safeAreaView}>
+      <View style={styles.container}>
+        <NavigationContainer theme={NavigationTheme}>
+          {/* <AuthStackNavigator /> */}
+          <AppTabNavigator />
+        </NavigationContainer>
+        <StatusBar style="auto" />
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeAreaView: {
+    flex: 1,
+    backgroundColor: colors.black,
+    paddingTop: Platform.OS === "android" ? NativeStatusBar.currentHeight : 0,
+    paddingBottom: spacing.large,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingHorizontal: spacing.large,
   },
 });
