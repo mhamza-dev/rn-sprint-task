@@ -1,5 +1,10 @@
-import { StyleSheet, View } from "react-native";
-import React from "react";
+import {
+  Keyboard,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
+import React, { useContext } from "react";
 
 //Navigation
 import { useNavigation } from "@react-navigation/native";
@@ -10,6 +15,12 @@ import * as Yup from "yup";
 
 // components
 import AppText from "../../components/AppText";
+import AppForm from "../../components/form/AppForm";
+import TextField from "../../components/form/TextField";
+import PrimaryButton from "../../components/Buttons/PrimaryButton";
+import TertiaryButton from "../../components/Buttons/TertiaryButton";
+import SecondaryButton from "../../components/Buttons/SecondaryButton";
+import SubmitButton from "../../components/form/SubmitButton";
 
 // utils
 import {
@@ -19,13 +30,17 @@ import {
   SCREEN_NAMES,
   spacing,
 } from "../../utils";
-import AppForm from "../../components/form/AppForm";
-import TextField from "../../components/form/TextField";
-import PrimaryButton from "../../components/Buttons/PrimaryButton";
-import TertiaryButton from "../../components/Buttons/TertiaryButton";
-import SecondaryButton from "../../components/Buttons/SecondaryButton";
+
+// api
+import { loginUser } from "../../api/auth";
+
+// hooks
+import { AuthContext } from "../../hooks/AuthContext";
+import { FlashMessageContext } from "../../hooks/FlashMessageContext";
+import { jwtDecode } from "jwt-decode";
 
 const LoginScreen = () => {
+  const { setMessage } = useContext(FlashMessageContext);
   const navigation = useNavigation();
   const validationSchema = Yup.object().shape({
     email: Yup.string()
@@ -34,90 +49,114 @@ const LoginScreen = () => {
     password: Yup.string().required("Password is required"),
   });
 
+  const handleLogin = async (values) => {
+    console.log("Login submitted with:", values);
+    const response = await loginUser(values);
+
+    if (!response.success)
+      return setMessage({ message: response.error, type: "error" });
+
+    const user = jwtDecode(response.data);
+    navigation.navigate(SCREEN_NAMES.VERIFY_OTP, {
+      email: user.email,
+    });
+  };
+
   return (
-    <View style={styles.container}>
-      <View style={styles.headerContainer}>
-        <MaterialCommunityIcons
-          name="chevron-left"
-          size={40}
-          color={colors.white}
-          onPress={() => navigation.navigate(SCREEN_NAMES.AUTH)}
-        />
-        <AppText style={styles.title}>Login</AppText>
-      </View>
-
-      <AppForm
-        initialValues={{ email: "", password: "" }}
-        validationSchema={validationSchema}
-        onSubmit={() => {}}
-      >
-        <View style={styles.formFieldsContainer}>
-          <TextField
-            name="email"
-            placeholder="john.doe@example.com"
-            label="Email"
-            keyboardType="email-address"
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+        <View style={styles.headerContainer}>
+          <MaterialCommunityIcons
+            name="chevron-left"
+            size={40}
+            color={colors.white}
+            onPress={() => navigation.navigate(SCREEN_NAMES.AUTH)}
           />
-          <TextField
-            name="password"
-            placeholder="********"
-            label="Password"
-            secureTextEntry
-          />
+          <AppText style={styles.title}>Login</AppText>
         </View>
-        <View style={styles.forgotPasswordContainer}>
-          <TertiaryButton
-            title="Forgot Password?"
-            onPress={() => navigation.navigate(SCREEN_NAMES.FORGET_PASSWORD)}
-            titleStyle={styles.forgotPasswordTitle}
-          />
-        </View>
-        <PrimaryButton title="Login" onPress={() => {}} style={styles.button} />
-
-        <View style={styles.dividerContainer}>
-          <View style={styles.divider} />
-          <AppText style={styles.dividerText}>Or</AppText>
-          <View style={styles.divider} />
-        </View>
-        <View style={styles.socialButtonsContainer}>
-          <SecondaryButton
-            title="Login with Google"
-            onPress={() => {}}
-            titleStyle={styles.socialButtonTitle}
-            LeftIcon={
-              <MaterialCommunityIcons
-                name="google"
-                size={24}
-                color={colors.white}
+        <View style={styles.formContainer}>
+          <AppForm
+            initialValues={{ email: "", password: "" }}
+            validationSchema={validationSchema}
+            onSubmit={handleLogin}
+          >
+            <View style={styles.formFieldsContainer}>
+              <TextField
+                name="email"
+                placeholder="john.doe@example.com"
+                label="Email"
+                keyboardType="email-address"
+                autoCapitalize="none"
               />
-            }
-          />
-          <SecondaryButton
-            title="Login with Apple"
-            onPress={() => {}}
-            titleStyle={styles.socialButtonTitle}
-            LeftIcon={
-              <MaterialCommunityIcons
-                name="apple"
-                size={24}
-                color={colors.white}
+              <TextField
+                name="password"
+                placeholder="********"
+                label="Password"
+                secureTextEntry
+                autoCapitalize="none"
               />
-            }
-          />
-        </View>
-        <View style={styles.createAccountContainer}>
-          <AppText style={styles.createAccountText}>
-            Don't have an account?{" "}
-            <AppText
-              style={styles.createAccountLink}
-              onPress={() => navigation.navigate(SCREEN_NAMES.REGISTER)}
-            >
-              Register
+            </View>
+            <View style={styles.forgotPasswordContainer}>
+              <TertiaryButton
+                title="Forgot Password?"
+                onPress={() =>
+                  navigation.navigate(SCREEN_NAMES.FORGET_PASSWORD)
+                }
+                titleStyle={styles.forgotPasswordTitle}
+              />
+            </View>
+            <SubmitButton
+              component={PrimaryButton}
+              title="Login"
+              style={styles.button}
+            />
+          </AppForm>
+
+          <View style={styles.dividerContainer}>
+            <View style={styles.divider} />
+            <AppText style={styles.dividerText}>Or</AppText>
+            <View style={styles.divider} />
+          </View>
+          <View style={styles.socialButtonsContainer}>
+            <SecondaryButton
+              title="Login with Google"
+              onPress={() => {}}
+              titleStyle={styles.socialButtonTitle}
+              LeftIcon={
+                <MaterialCommunityIcons
+                  name="google"
+                  size={24}
+                  color={colors.white}
+                />
+              }
+            />
+            <SecondaryButton
+              title="Login with Apple"
+              onPress={() => {}}
+              titleStyle={styles.socialButtonTitle}
+              LeftIcon={
+                <MaterialCommunityIcons
+                  name="apple"
+                  size={24}
+                  color={colors.white}
+                />
+              }
+            />
+          </View>
+          <View style={styles.createAccountContainer}>
+            <AppText style={styles.createAccountText}>
+              Don't have an account?{" "}
+              <AppText
+                style={styles.createAccountLink}
+                onPress={() => navigation.navigate(SCREEN_NAMES.REGISTER)}
+              >
+                Register
+              </AppText>
             </AppText>
-          </AppText>
+          </View>
         </View>
-      </AppForm>
-    </View>
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -127,11 +166,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     width: "100%",
-    justifyContent: "space-between",
   },
   headerContainer: {
     gap: spacing.medium,
     marginBottom: spacing.xxLarge,
+  },
+  formContainer: {
+    flex: 1,
+    justifyContent: "center",
   },
   title: {
     fontSize: fontSize.xxLarge,
@@ -155,6 +197,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.small,
+    marginVertical: spacing.large,
   },
   divider: {
     flex: 1,

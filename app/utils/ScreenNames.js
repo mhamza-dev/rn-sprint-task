@@ -6,4 +6,5 @@ export const SCREEN_NAMES = {
   LOGIN: "Login",
   REGISTER: "Register",
   FORGET_PASSWORD: "ForgetPassword",
+  VERIFY_OTP: "VerifyOTP",
 };

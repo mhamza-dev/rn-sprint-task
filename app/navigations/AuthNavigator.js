@@ -12,6 +12,7 @@ import RegisterScreen from "../screens/auth/RegisterScreen";
 import StepOne from "../screens/welcome/StepOne";
 import StepThree from "../screens/welcome/StepThree";
 import StepTwo from "../screens/welcome/StepTwo";
+import VerifyOTP from "../screens/auth/VerifyOTP";
 
 const AuthStack = createNativeStackNavigator();
 
@@ -27,6 +28,7 @@ const AuthStackNavigator = () => (
     <AuthStack.Screen name="StepThree" component={StepThree} />
     <AuthStack.Screen name="Auth" component={AuthScreen} />
     <AuthStack.Screen name="Login" component={LoginScreen} />
+    <AuthStack.Screen name="VerifyOTP" component={VerifyOTP} />
     <AuthStack.Screen name="ForgetPassword" component={ForgetPassword} />
     <AuthStack.Screen name="Register" component={RegisterScreen} />
   </AuthStack.Navigator>

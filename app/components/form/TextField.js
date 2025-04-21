@@ -18,8 +18,6 @@ const TextField = ({ name, label, leftIcon, rightIcon, ...otherProps }) => {
   const ref = useRef(null);
   const { handleChange, handleBlur, values, errors, touched, setFieldTouched } =
     useFormikContext();
-
-  console.log(values);
   return (
     <>
       {label && <AppText style={styles.label}>{label}</AppText>}
